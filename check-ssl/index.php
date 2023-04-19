@@ -3,6 +3,7 @@
 // * Address and port of the forwarding server
 $target_ip = 'example.com';
 $target_port = '443';
+$ssl_path = '/path/to/ca_bundle.crt';
 
 // * Request forwarding
 $ch = curl_init();
@@ -15,7 +16,7 @@ curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $_SERVER['REQUEST_METHOD']);
 // * Checking the SSL certificate
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-curl_setopt($ch, CURLOPT_CAINFO, '/path/to/ca_bundle.crt');
+curl_setopt($ch, CURLOPT_CAINFO, $ssl_path);
 
 // * Perform routing of the incoming request
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
