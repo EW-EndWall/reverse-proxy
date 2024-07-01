@@ -1,0 +1,26 @@
+version: "3" # 3  3.9
+
+volumes:
+  webapp:
+
+services:
+  webapp: # container name
+    build:
+      context: . # dockerfile directory
+      dockerfile: Dockerfile.dev
+    image: webapp:reverse_proxy # image name
+    container_name: reverse_proxy # container name
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+    volumes:
+      - ./:/usr/src/app # files copied
+      - webapp:/usr/src/app/node_modules # Remove this if you have pure JS dependencies
+    ports: # container port
+      - "1980:80"
+      - "1981:443"
+      #- "80:80"
+      #- "443:443"
+      - "81:81" # socetio port

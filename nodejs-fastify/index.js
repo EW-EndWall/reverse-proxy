@@ -72,13 +72,12 @@ const onError = (err, req, res) => {
 const proxyconfig = (target) => {
   return {
     target: target,
-    changeOrigin: true,
+    changeOrigin: true, // ? When this is turned on, it does not see hosting - it changes the source of the host header to the target URL
     on: {
       proxyReq: onProxyReq,
       proxyRes: onProxyRes,
       error: onError,
     },
-    // changeOrigin: true, // ? When this is turned on, it does not see hosting - it changes the source of the host header to the target URL
     secure: false,
     ws: true, // * websoket error fix
     // pathRewrite: { "^/api": "" }, // * Rewrite the incoming request when necessary
