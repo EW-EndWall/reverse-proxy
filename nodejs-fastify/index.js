@@ -5,7 +5,7 @@ import fs from "fs";
 import Fastify from "fastify";
 
 const fastify = Fastify({
-  logger: process.env.FASTIFYLOG === "true", // * is log
+  logger: process.env.FASTIFY_LOG === "true", // * is log
   trustProxy: true,
   // https: {
   //   key: fs.readFileSync("./cert/key.pem"), // * ssl key
@@ -17,6 +17,38 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 
 import proxyRouter from "./router.js";
 import proxyAccess from "./access.js";
+
+let dataStore = null;
+
+const appLogCollector = async (logData) => {
+  if (process.env.LOG_SAVE == true) {
+    return;
+  }
+  return;
+};
+
+const proxyDataApi = async () => {
+  try {
+    const response = await fetch(process.env.PROXY_DATA_API, {
+      headers: {
+        Authorization: `Token ${process.env.PROXY_DATA_API_TOKEN}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    const data = await response.json();
+    dataStore = data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+if (process.env.PROXY_DATA == "remote") {
+  // * Run every 5 minutes
+  proxyDataApi();
+  setInterval(proxyDataApi, 5 * 60 * 1000);
+}
 
 const onProxyReq = (proxyReq, req, res) => {
   // * handle request
@@ -59,7 +91,12 @@ const proxyconfig = (target) => {
 // * Middleware routing
 fastify.addHook("onRequest", (req, reply) => {
   const hostName = req.headers.host;
-  const routerTarget = proxyRouter[hostName];
+  const routerTarget =
+    process.env.PROXY_DATA == "remote"
+      ? dataStore != null
+        ? dataStore[hostName]
+        : proxyRouter[hostName]
+      : proxyRouter[hostName];
   fastify.log.info(`Request host ${hostName}`);
 
   if (routerTarget != undefined) {
